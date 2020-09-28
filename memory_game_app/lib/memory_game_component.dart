@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'models/memory_card.dart';
@@ -10,6 +12,14 @@ class MemoryGameComponent extends StatefulWidget {
 
 class _MemoryGameComponentState extends State<MemoryGameComponent> {
   List<CardMemory> cards;
+  List<int> flippedCards;
+  bool firstMove;
+  bool onPlay;
+  bool endGame;
+  int couples;
+  DateTime startDate;
+  DateTime endDate;
+  DateTime totalTime;
 
   _MemoryGameComponentState() {
     buildCards();
@@ -36,24 +46,92 @@ class _MemoryGameComponentState extends State<MemoryGameComponent> {
   }
 
   newGame() {
-    // this.shuffleCards()
+    // this.shuffleCards();
 
-    // this.cardsFlipped = [];
+    this.flippedCards = [];
 
-    // this.couples = 0;
+    this.couples = 0;
 
-    // this.endGame = false;
+    this.endGame = false;
 
-    // this.onPLay = false;
+    this.onPlay = false;
 
-    // this.firstMove = true;
+    this.firstMove = true;
 
     this.cards.forEach((element) {
       element.flipped = false;
     });
   }
 
-  flipCard(int cardId) {}
+  flipCard(CardMemory card) {
+    if (this.firstMove) {
+      this.startDate = DateTime.now();
+
+      this.firstMove = false;
+    }
+
+    if (!this.onPlay) {
+      this.onPlay = true;
+
+      if (!card.flipped) {
+        setState(() {
+          card.flipped = true;
+        });
+
+        this.flippedCards.add(card.id);
+
+        if (this.flippedCards.length >= 2) {
+          var previousCardId;
+
+          this.flippedCards.forEach((element) {
+            if (element != card.id) {
+              previousCardId = element;
+            }
+          });
+
+          var previousCard =
+              this.cards.where((element) => element.id == previousCardId).first;
+
+          if (previousCard.cardContent == card.cardContent) {
+            this.couples++;
+
+            if (this.couples >= 5) {
+              this.endDate = DateTime.now();
+              // this.totalTime = DateTime(this.endDate.getTime() - this.startDate.getTime())
+
+              setState(() {
+                this.endGame = true;
+              });
+            }
+
+            this.flippedCards = [];
+
+            this.onPlay = false;
+          } else {
+            Timer(const Duration(milliseconds: 1000), () {
+              this.flipCouples();
+            });
+          }
+        }
+      }
+      if (this.flippedCards.length <= 1) {
+        this.onPlay = false;
+      }
+    }
+  }
+
+  flipCouples() {
+    this.cards.forEach((element) {
+      if (this.flippedCards.contains(element.id)) {
+        setState(() {
+          element.flipped = false;
+        });
+      }
+    });
+    this.flippedCards = [];
+
+    this.onPlay = false;
+  }
 
   Widget _createTile(CardMemory card) {
     return Center(
@@ -69,8 +147,21 @@ class _MemoryGameComponentState extends State<MemoryGameComponent> {
             borderRadius: Styles.defaultBorderRadius,
             splashColor: Colors.deepPurple.shade100,
             onTap: () {
-              this.flipCard(card.id);
+              this.flipCard(card);
             },
+            child: Container(
+              margin: EdgeInsets.only(left: 10, right: 10),
+              child: card.flipped
+                  ? Icon(
+                      card.cardContent,
+                      size: 35,
+                      color: Colors.deepPurple,
+                    )
+                  : Image.asset(
+                      'assets/images/iconx.png',
+                      width: 24,
+                    ),
+            ),
           ),
         ),
       ),
