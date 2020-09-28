@@ -23,7 +23,12 @@ class _MemoryGameComponentState extends State<MemoryGameComponent> {
 
   _MemoryGameComponentState() {
     buildCards();
-    newGame();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    this.newGame();
   }
 
   buildCards() {
@@ -52,14 +57,16 @@ class _MemoryGameComponentState extends State<MemoryGameComponent> {
 
     this.couples = 0;
 
-    this.endGame = false;
-
     this.onPlay = false;
 
     this.firstMove = true;
 
-    this.cards.forEach((element) {
-      element.flipped = false;
+    setState(() {
+      this.endGame = false;
+
+      this.cards.forEach((element) {
+        element.flipped = false;
+      });
     });
   }
 
@@ -174,15 +181,65 @@ class _MemoryGameComponentState extends State<MemoryGameComponent> {
       resizeToAvoidBottomPadding: true,
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Container(
-          alignment: Alignment.center,
-          margin: EdgeInsets.only(top: 50),
-          // margin: EdgeInsets.all(20),
-          child: GridView.count(
-            padding: EdgeInsets.only(left: 20.0, right: 20.0),
-            crossAxisCount: 3,
-            children: cards.map((item) => _createTile(item)).toList(),
-          ),
+        child: Stack(
+          children: [
+            Container(
+              alignment: Alignment.center,
+              margin: EdgeInsets.only(top: 50),
+              // margin: EdgeInsets.all(20),
+              child: GridView.count(
+                padding: EdgeInsets.only(left: 20.0, right: 20.0),
+                crossAxisCount: 3,
+                children: cards.map((item) => _createTile(item)).toList(),
+              ),
+            ),
+            this.endGame
+                ? Container(
+                    width: double.infinity,
+                    height: MediaQuery.of(context).size.height,
+                    color: Colors.white.withOpacity(0.8),
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      alignment: Alignment.center,
+                      child: Column(
+                        children: [
+                          Text('Boa!'),
+                          Text('Fez em x lalau'),
+                          Container(
+                            margin: EdgeInsets.only(
+                              top: 20,
+                              bottom: 20,
+                              left: 20,
+                              right: 20,
+                            ),
+                            child: ButtonTheme(
+                              minWidth: 200,
+                              height: 60.0,
+                              child: RaisedButton(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: Styles.defaultBorderRadius,
+                                ),
+                                onPressed: () {
+                                  this.newGame();
+                                },
+                                color: Colors.deepPurple,
+                                child: Text(
+                                  'Novo jogo',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : new Container(),
+          ],
         ),
       ),
     );
