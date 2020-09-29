@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'models/memory_card.dart';
 import 'utils/styles.dart';
@@ -104,7 +105,11 @@ class _MemoryGameComponentState extends State<MemoryGameComponent> {
 
             if (this.couples >= 5) {
               this.endDate = DateTime.now();
-              // this.totalTime = DateTime(this.endDate.getTime() - this.startDate.getTime())
+              var minutes = (this.startDate.minute - endDate.minute);
+              var seconds = (this.startDate.second - endDate.second);
+
+              totalTime = DateTime(startDate.year, startDate.month,
+                  startDate.day, startDate.hour, minutes, seconds);
 
               setState(() {
                 this.endGame = true;
@@ -205,7 +210,13 @@ class _MemoryGameComponentState extends State<MemoryGameComponent> {
                       child: Column(
                         children: [
                           Text('Boa!'),
-                          Text('Fez em x lalau'),
+                          Text(totalTime.minute >= 1
+                              ? 'Fez em' +
+                                  DateFormat.ms().format(totalTime) +
+                                  ' minutos'
+                              : 'Fez em' +
+                                  totalTime.second.toString() +
+                                  'segundos'),
                           Container(
                             margin: EdgeInsets.only(
                               top: 20,
