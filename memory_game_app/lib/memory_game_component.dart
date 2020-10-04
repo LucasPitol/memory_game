@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import 'models/memory_card.dart';
@@ -20,11 +21,17 @@ class _MemoryGameComponentState extends State<MemoryGameComponent> {
   int couples;
   DateTime startDate;
   DateTime endDate;
-  DateTime totalTime;
+  String totalTime;
 
   _MemoryGameComponentState() {
     buildCards();
   }
+
+  TextStyle defaultTextStile = TextStyle(
+    color: Colors.grey.shade900,
+    fontWeight: FontWeight.w500,
+    fontSize: 21,
+  );
 
   @override
   void initState() {
@@ -53,6 +60,7 @@ class _MemoryGameComponentState extends State<MemoryGameComponent> {
 
   newGame() {
     // this.shuffleCards();
+    this.cards.shuffle();
 
     this.flippedCards = [];
 
@@ -105,11 +113,13 @@ class _MemoryGameComponentState extends State<MemoryGameComponent> {
 
             if (this.couples >= 5) {
               this.endDate = DateTime.now();
-              var minutes = (this.startDate.minute - endDate.minute);
-              var seconds = (this.startDate.second - endDate.second);
 
-              totalTime = DateTime(startDate.year, startDate.month,
-                  startDate.day, startDate.hour, minutes, seconds);
+              int totalTimeInSeconds =
+                  (endDate.difference(startDate).inSeconds);
+
+              totalTime = totalTimeInSeconds > 60
+                  ? 'Fez em ' + formatDuration(totalTimeInSeconds) + ' minutos'
+                  : 'Fez em ' + totalTimeInSeconds.toString() + ' segundos';
 
               setState(() {
                 this.endGame = true;
@@ -130,6 +140,17 @@ class _MemoryGameComponentState extends State<MemoryGameComponent> {
         this.onPlay = false;
       }
     }
+  }
+
+  String formatDuration(int totalTimeInSeconds) {
+    (Duration(seconds: totalTimeInSeconds)).toString();
+
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(
+        Duration(seconds: totalTimeInSeconds).inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(
+        Duration(seconds: totalTimeInSeconds).inSeconds.remainder(60));
+    return "$twoDigitMinutes:$twoDigitSeconds";
   }
 
   flipCouples() {
@@ -182,6 +203,10 @@ class _MemoryGameComponentState extends State<MemoryGameComponent> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Styles.mainBackgroundColor,
+      statusBarIconBrightness: Brightness.dark,
+    ));
     return Scaffold(
       resizeToAvoidBottomPadding: true,
       backgroundColor: Colors.white,
@@ -202,24 +227,29 @@ class _MemoryGameComponentState extends State<MemoryGameComponent> {
                 ? Container(
                     width: double.infinity,
                     height: MediaQuery.of(context).size.height,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withOpacity(0.9),
                     child: Container(
-                      width: 100,
-                      height: 100,
-                      alignment: Alignment.center,
+                      margin: EdgeInsets.only(
+                          top: (MediaQuery.of(context).size.height) / 3),
+                      // width: 100,
+                      // height: 100,
+                      // alignment: Alignment.center,
                       child: Column(
                         children: [
-                          Text('Boa!'),
-                          Text(totalTime.minute >= 1
-                              ? 'Fez em' +
-                                  DateFormat.ms().format(totalTime) +
-                                  ' minutos'
-                              : 'Fez em' +
-                                  totalTime.second.toString() +
-                                  'segundos'),
+                          Container(
+                            margin: EdgeInsets.only(bottom: 20),
+                            child: Text(
+                              'Boa!',
+                              style: defaultTextStile,
+                            ),
+                          ),
+                          Text(
+                            totalTime,
+                            style: defaultTextStile,
+                          ),
                           Container(
                             margin: EdgeInsets.only(
-                              top: 20,
+                              top: 40,
                               bottom: 20,
                               left: 20,
                               right: 20,
